@@ -189,6 +189,91 @@ iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
 
 これにより、VPNクライアントからのトラフィックがEC2インスタンスのパブリックIPからインターネットへ送出されます。
 
+### Public Subnet配置とNAT Gatewayについて
+
+#### なぜPublic Subnetに配置するのか
+
+このアーキテクチャでは、EC2インスタンスを**Public Subnet**に配置しています。これは設計上の正しい選択です。
+
+**理由:**
+
+1. **VPNサーバーはインターネット向けサービス**
+   - クライアント（iPhone, iPad, MacBook）からの接続を直接受け付ける必要がある
+   - Elastic IPによるインターネットからの到達性が必須
+   - WireGuard (UDP 51820) への直接アクセスが必要
+
+2. **Internet Gateway経由で直接通信可能**
+   - Public SubnetのインスタンスはInternet Gatewayを通じて直接インターネットにアクセス可能
+   - NAT Gatewayは不要
+
+3. **コスト最適化**
+   - NAT Gateway: 約$32/月 + データ転送料 $0.045/GB
+   - このプロジェクトには不要なコスト
+
+#### NAT Gatewayが不要な理由
+
+NAT Gatewayは**Private Subnetのリソースがインターネットにアクセスするためのもの**です。
+
+**Private SubnetとNAT Gatewayが必要なケース:**
+- Webサーバー + DBサーバー構成（DBはPrivate Subnetに配置）
+- セキュリティポリシーで直接インターネット接続が禁止されている場合
+- 複数のPrivate SubnetリソースからのアウトバウンドトラフィックをNATで集約したい場合
+
+**このプロジェクトには不要:**
+- Private Subnetが存在しない
+- EC2は直接インターネット接続が必要（VPNサーバーの性質上）
+
+#### セキュリティ面の考慮
+
+Public Subnet配置でも以下により十分に保護されています:
+
+1. **Security Group**
+   - UDP 51820のみ許可
+   - SSHポート(22)は開放していない
+
+2. **Session Manager**
+   - SSH不要でセキュアにアクセス可能
+
+3. **IMDSv2強制**
+   - メタデータサービスへの不正アクセス防止
+
+4. **暗号化**
+   - EBSボリューム暗号化
+   - WireGuard通信の暗号化（ChaCha20-Poly1305）
+
+5. **最小権限IAMロール**
+   - 必要最小限の権限のみ付与
+
+#### ネットワーク構成の比較
+
+**現在の設計（推奨）:**
+```
+Internet
+    ↓
+Internet Gateway (無料)
+    ↓
+Public Subnet
+    ↓
+EC2 (Elastic IP) ← クライアントから直接アクセス可能
+```
+
+**もしNAT Gatewayを使う設計（不適切）:**
+```
+Internet
+    ↓
+Internet Gateway
+    ↓
+Public Subnet
+    ↓
+NAT Gateway ($32/月)
+    ↓
+Private Subnet
+    ↓
+EC2 ← Elastic IP使えない、クライアントからアクセス不可能
+```
+
+**結論:** Public Subnet配置は、VPNサーバーの性質上、適切かつコスト効率的な設計です。
+
 ## コンポーネント詳細
 
 ### EC2インスタンス
