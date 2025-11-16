@@ -1,0 +1,142 @@
+# WireGuard VPN on EC2 - .gitignore
+
+# WireGuard Configuration Files (秘密鍵を含むため除外)
+*.conf
+!*.conf.template
+*.key
+*.pem
+privatekey
+publickey
+
+# AWS Credentials
+.aws/
+*.credentials
+aws-credentials.json
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# CDK
+cdk/node_modules/
+cdk/cdk.out/
+cdk/.cdk.staging/
+cdk/cdk.context.json
+cdk/dist/
+cdk/build/
+cdk/*.js
+cdk/*.d.ts
+cdk/**/*.js
+cdk/**/*.d.ts
+!cdk/jest.config.js
+
+# Package Managers
+# npm (not used in this project)
+npm-debug.log*
+package-lock.json
+
+# pnpm (used in this project)
+pnpm-debug.log*
+# pnpm-lock.yamlはコミットする（依存関係の固定のため）
+
+# yarn (not used in this project)
+yarn-debug.log*
+yarn-error.log*
+yarn.lock
+
+# lerna
+lerna-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# CloudWatch Agent
+/var/log/amazon-cloudwatch-agent/
+amazon-cloudwatch-agent.json.bak
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Build outputs
+dist/
+out/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Secrets and sensitive data
+secrets/
+*.secret
+*.token
+*.cert
+*.crt
+*.csr
+
+# WireGuard client configurations (generated)
+client-configs/
+*.png
+
+# Terraform (if used alongside CDK)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Python (if any Python scripts are added)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+
+# CloudFormation
+*.template.json
+*.template.yaml
+!cdk.out/*.template.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# SSH keys
+id_rsa
+id_rsa.pub
+*.ppk
+
+# Documentation builds
+docs/_build/
+site/
